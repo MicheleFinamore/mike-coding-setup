@@ -54,3 +54,28 @@ test("dry-run reports files without creating them", async (context) => {
   assert.match(result.stdout, /would add/);
   await assert.rejects(readFile(path.join(target, ".codex/agents/verifier.toml"), "utf8"));
 });
+
+test("skills dry-run uses Matt Pocock's official installer", async (context) => {
+  const target = await createTarget();
+  context.after(() => rm(target, { force: true, recursive: true }));
+
+  const result = run(target, "--skills", "--dry-run");
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /would run\s+npx(?:\.cmd)? skills@latest add mattpocock\/skills/);
+  await assert.rejects(readFile(path.join(target, ".agents/skills/implement/SKILL.md"), "utf8"));
+});
+
+test("all dry-run includes rules, agents, skills, and Graphify", async (context) => {
+  const target = await createTarget();
+  context.after(() => rm(target, { force: true, recursive: true }));
+
+  const result = run(target, "--all", "--dry-run");
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /would add\s+\.agents[\\/]rules[\\/]code-quality\.md/);
+  assert.match(result.stdout, /would add\s+\.codex[\\/]agents[\\/]verifier\.toml/);
+  assert.match(result.stdout, /skills@latest add mattpocock\/skills/);
+  assert.match(result.stdout, /uv tool install --reinstall graphifyy/);
+  assert.match(result.stdout, /uvx --from graphifyy graphify install --project --platform codex/);
+});

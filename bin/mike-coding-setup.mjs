@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { cp, mkdir, readdir, stat } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -15,13 +16,23 @@ Options:
   --target <path>  Install into this directory instead of the current directory.
   --rules          Install .agents/rules (selected by default).
   --agents         Install .codex/agents (selected by default).
-  --skills         Install .agents/skills, including license material.
+  --skills         Install Matt Pocock's skills using the official Skills CLI.
+  --graphify       Install Graphify for Codex in this project (alias: --grapi).
+  --all            Install rules, agents, Matt Pocock's skills, and Graphify.
   --dry-run        Show the files that would be installed.
   --force          Replace existing destination files.
   --help           Show this help.`;
 
 function parseArguments(argumentsList) {
-  const options = { agents: false, dryRun: false, force: false, rules: false, skills: false, target: process.cwd() };
+  const options = {
+    agents: false,
+    dryRun: false,
+    force: false,
+    graphify: false,
+    rules: false,
+    skills: false,
+    target: process.cwd(),
+  };
   let hasSelection = false;
 
   for (let index = 0; index < argumentsList.length; index += 1) {
@@ -29,6 +40,15 @@ function parseArguments(argumentsList) {
     if (argument === "--help" || argument === "-h") return { help: true };
     if (argument === "--rules" || argument === "--agents" || argument === "--skills") {
       options[argument.slice(2)] = true;
+      hasSelection = true;
+    } else if (argument === "--graphify" || argument === "--grapi") {
+      options.graphify = true;
+      hasSelection = true;
+    } else if (argument === "--all") {
+      options.rules = true;
+      options.agents = true;
+      options.skills = true;
+      options.graphify = true;
       hasSelection = true;
     } else if (argument === "--dry-run") {
       options.dryRun = true;
@@ -50,6 +70,38 @@ function parseArguments(argumentsList) {
   }
 
   return options;
+}
+
+function commandLabel(command, argumentsList) {
+  return [command, ...argumentsList].join(" ");
+}
+
+function runExternalCommand(command, argumentsList, options) {
+  const label = commandLabel(command, argumentsList);
+  if (options.dryRun) {
+    console.log(`would run  ${label}`);
+    return;
+  }
+
+  console.log(`run       ${label}`);
+  const result = spawnSync(command, argumentsList, {
+    cwd: options.target,
+    shell: process.platform === "win32",
+    stdio: "inherit",
+  });
+
+  if (result.error) throw result.error;
+  if (result.status !== 0) throw new Error(`${label} exited with status ${result.status}.`);
+}
+
+function installMattPocockSkills(options) {
+  const npx = process.platform === "win32" ? "npx.cmd" : "npx";
+  runExternalCommand(npx, ["skills@latest", "add", "mattpocock/skills"], options);
+}
+
+function installGraphify(options) {
+  runExternalCommand("uv", ["tool", "install", "--reinstall", "graphifyy"], options);
+  runExternalCommand("uvx", ["--from", "graphifyy", "graphify", "install", "--project", "--platform", "codex"], options);
 }
 
 async function walkFiles(directory) {
@@ -116,7 +168,6 @@ async function main() {
   const groups = [
     options.rules && { source: "rules", destination: ".agents/rules" },
     options.agents && { source: "agents", destination: ".codex/agents" },
-    options.skills && { source: "skills", destination: ".agents/skills" },
   ].filter(Boolean);
 
   if (!options.dryRun) await mkdir(options.target, { recursive: true });
@@ -127,6 +178,9 @@ async function main() {
     installed += result.installed;
     skipped += result.skipped;
   }
+
+  if (options.skills) installMattPocockSkills(options);
+  if (options.graphify) installGraphify(options);
 
   console.log(`\n${options.dryRun ? "Would install" : "Installed"} ${installed} file(s); skipped ${skipped}.`);
   if (options.rules || options.agents) {

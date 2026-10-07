@@ -1,6 +1,6 @@
 {
   "name": "mike-coding-setup",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Install reusable Codex rules, specialist agents, and optional workflow skills into a project.",
   "repository": {
     "type": "git",
