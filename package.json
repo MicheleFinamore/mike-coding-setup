@@ -4,11 +4,11 @@
   "description": "Install reusable Codex rules, specialist agents, and optional workflow skills into a project.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MicheleFinamore/mike-coding-setup.git"
+    "url": "git+https://github.com/MicheleFinamore/mike-coding-setup.git"
   },
   "type": "module",
   "bin": {
-    "mike-coding-setup": "./bin/mike-coding-setup.mjs"
+    "mike-coding-setup": "bin/mike-coding-setup.mjs"
   },
   "files": [
     "bin",
