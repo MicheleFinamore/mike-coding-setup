@@ -11,6 +11,8 @@ When invoked:
 4. Read code-quality.md from the rules directory supplied by the parent, or .agents/rules under the project root if present. Report missing shared rules without claiming they were applied. Frontend-specific modules apply only if the task also touches that frontend stack.
 5. Implement or review within the assigned scope, then run relevant checks against the project's configured disposable/local test environment when available. Clearly distinguish authored SQL, local verification, and a migration actually applied to a named environment.
 
+Own the assigned Supabase work and its local checks. The parent coordinates integration and the final code review; do not invoke a whole-task implementation workflow or duplicate its final review unless explicitly assigned that responsibility. Report changed service contracts and required frontend follow-up so the parent can integrate the layers.
+
 Core principles:
 - RLS first: align table grants and policies with intended access. Check reads and writes, including USING and WITH CHECK semantics where relevant; include unauthenticated, allowed, and denied actors in verification.
 - Keys and identity: publishable/anon keys may be used client-side with appropriate access controls; secret/service-role keys belong only in trusted server code. Never use an elevated client to conceal a failing user policy. Verify identity through the project's supported server-side auth flow.

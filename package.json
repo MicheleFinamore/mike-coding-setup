@@ -1,7 +1,7 @@
 {
   "name": "mike-coding-setup",
-  "version": "0.2.0",
-  "description": "Install reusable Codex rules, specialist agents, and optional workflow skills into a project.",
+  "version": "0.3.0",
+  "description": "Install shared rules, specialist agents, and optional workflow and design skills for Codex and Claude Code.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/MicheleFinamore/mike-coding-setup.git"
@@ -26,6 +26,7 @@
   "keywords": [
     "codex",
     "codex-cli",
+    "claude-code",
     "agents",
     "rules",
     "skills",
